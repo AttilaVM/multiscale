@@ -10,15 +10,14 @@ Options:
   --version                          Print version
 """
 
-__version__ = "1.0.1"
 
 import sys
 from docopt import docopt
 from functools import partial
 
-from utils import *
-from elevate import channel
-from pymagick import loadImg, saveImg, scaleImg
+from multiscale.elevate import channel
+from multiscale.utils import *
+from multiscale.pymagick import loadImg, saveImg, scaleImg
 
 
 # CLI option processing and validation schema
@@ -61,7 +60,7 @@ def multiscale(srcDir, dstDir, ratio, resolutions):
                 continue
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     opts = unMark(docopt(__doc__))
     # --version --> print version
     if opts["version"]:

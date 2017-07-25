@@ -63,7 +63,7 @@ def multiscale(srcDir, dstDir, ratio, resolutions, compact):
                  partial(saveImg, dstFilePath)])
 
 
-if __name__ == "__main__":
+def main():
     opts = unMark(docopt(__doc__))
     # --version --> print version
     if opts["version"]:
@@ -86,3 +86,6 @@ if __name__ == "__main__":
                opts["ratio"],
                opts["resolutions"],
                opts["compact"])
+
+if __name__ == '__main__':
+    main()

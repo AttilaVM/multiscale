@@ -60,3 +60,9 @@ def isValidResList(resList):
     for res in resList:
         if not isinstance(res, int):
             raise TypeError("Wrong resolutions format")
+
+
+def appendToFileName(fileName, additionalStr):
+    name = fileName[:(fileName.rfind("."))]
+    extension = fileName[(fileName.rfind(".")):]
+    return "{}{}{}".format(name, additionalStr, extension)

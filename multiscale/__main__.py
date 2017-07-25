@@ -1,12 +1,13 @@
 """multiscale
 
 Usage:
-  multiscale <source-directory> <destination-directory> [--ratio=<ratio>] [--resolutions=<resolutions>]
+  multiscale <source-directory> <destination-directory> [--ratio=<ratio>] [--resolutions=<resolutions>] [--compact]
   multiscale --version
 
 Options:
   -s --ratio=<ratio>                 The ratio to tran [default: 2]
   -r --resolutions=<resolutions>     The display resolutions, which are used to calculate the different image sizes [default: 1366,1920,1440,1600,1280,1024]
+  -c --compact                         If set the, destination dir will be populated directly with the rescaled images differentiated by their name: original-name.extension --> original-name-resolution.extension
   --version                          Print version
 """
 
@@ -14,6 +15,7 @@ Options:
 import sys
 from docopt import docopt
 from functools import partial
+from itertools import product as cproduct
 
 from multiscale.elevate import channel
 from multiscale.utils import *
@@ -38,26 +40,27 @@ proccessors = {"source-directory":
                                isValidResList]}
 
 
-def multiscale(srcDir, dstDir, ratio, resolutions):
+def multiscale(srcDir, dstDir, ratio, resolutions, compact):
     # Derive data
     imgWidths = map(lambda x: round(ratio * x), resolutions)
-
-    for imgWidth in imgWidths:
-        subDirPath = os.path.join(dstDir, "{}x".format(imgWidth))
-        # create subdirs in destination, if non-existent
-        if not os.access(subDirPath, os.R_OK):
-            os.mkdir(subDirPath)
-        # Create scale steps
-        for srcFileName in os.listdir(srcDir):
-            srcFilePath = os.path.join(srcDir, srcFileName)
-            if isImageFile(srcFilePath):
-                dstFilePath = os.path.join(subDirPath, srcFileName)
-                channel(srcFilePath,
-                        [loadImg,
-                         partial(scaleImg, imgWidth, imgWidth, keepRatio=True),
-                         partial(saveImg, dstFilePath)])
-            else:
-                continue
+    for imgWidth, srcFileName in cproduct(imgWidths, os.listdir(srcDir)):
+        srcFilePath = os.path.join(srcDir, srcFileName)
+        if not isImageFile(srcFilePath):
+            continue
+        # Create destination path according to user compact option
+        if compact:
+            newFileName = appendToFileName(srcFileName, ("-" + str(imgWidth)))
+            dstFilePath = os.path.join(dstDir, newFileName)
+        else:
+            subDirPath = os.path.join(dstDir, "{}x".format(imgWidth))
+            dstFilePath = os.path.join(subDirPath, srcFileName)
+            if not os.access(subDirPath, os.R_OK):
+                os.mkdir(subDirPath)
+        # Load, resize and save image
+        channel(srcFilePath,
+                [loadImg,
+                 partial(scaleImg, imgWidth, imgWidth, keepRatio=True),
+                 partial(saveImg, dstFilePath)])
 
 
 if __name__ == "__main__":
@@ -81,4 +84,5 @@ if __name__ == "__main__":
     multiscale(opts["source-directory"],
                opts["destination-directory"],
                opts["ratio"],
-               opts["resolutions"])
+               opts["resolutions"],
+               opts["compact"])

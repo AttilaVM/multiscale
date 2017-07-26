@@ -66,3 +66,10 @@ def appendToFileName(fileName, additionalStr):
     name = fileName[:(fileName.rfind("."))]
     extension = fileName[(fileName.rfind(".")):]
     return "{}{}{}".format(name, additionalStr, extension)
+
+
+def isExcluded(path, excludeRegex):
+    if not excludeRegex or not re.match(excludeRegex, path):
+        return False
+    else:
+        return True

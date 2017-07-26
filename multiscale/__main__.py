@@ -1,13 +1,14 @@
 """multiscale
 
 Usage:
-  multiscale <source-directory> <destination-directory> [--ratio=<ratio>] [--resolutions=<resolutions>] [--compact]
+  multiscale <source-directory> <destination-directory> [--ratio=<ratio>] [--resolutions=<resolutions>] [--compact] [--exclude=<exclude>]
   multiscale --version
 
 Options:
   -s --ratio=<ratio>                 The ratio to tran [default: 2]
   -r --resolutions=<resolutions>     The display resolutions, which are used to calculate the different image sizes [default: 1366,1920,1440,1600,1280,1024]
   -c --compact                         If set the, destination dir will be populated directly with the rescaled images differentiated by their name: original-name.extension --> original-name-resolution.extension
+ -e  --exclude=<exclude>        Images with matching paths will be excluded
   --version                          Print version
 """
 
@@ -40,12 +41,12 @@ proccessors = {"source-directory":
                                isValidResList]}
 
 
-def multiscale(srcDir, dstDir, ratio, resolutions, compact):
+def multiscale(srcDir, dstDir, ratio, resolutions, compact, excludeRegex):
     # Derive data
     imgWidths = map(lambda x: round(ratio * x), resolutions)
     for imgWidth, srcFileName in cproduct(imgWidths, os.listdir(srcDir)):
         srcFilePath = os.path.join(srcDir, srcFileName)
-        if not isImageFile(srcFilePath):
+        if not isImageFile(srcFilePath) or isExcluded(srcFilePath, excludeRegex):
             continue
         # Create destination path according to user compact option
         if compact:
@@ -61,6 +62,11 @@ def multiscale(srcDir, dstDir, ratio, resolutions, compact):
                 [loadImg,
                  partial(scaleImg, imgWidth, imgWidth, keepRatio=True),
                  partial(saveImg, dstFilePath)])
+    # print scales
+    # print("The used scales are:")
+    # print(imgWidths)
+    # for imgWidth in imgWidths:
+    #     print(imgWidths, end="w ")
 
 
 def main():
@@ -85,7 +91,8 @@ def main():
                opts["destination-directory"],
                opts["ratio"],
                opts["resolutions"],
-               opts["compact"])
+               opts["compact"],
+               opts["exclude"])
 
 if __name__ == '__main__':
     main()

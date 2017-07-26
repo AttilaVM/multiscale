@@ -62,10 +62,11 @@ def multiscale(srcDir, dstDir, ratio, resolutions, compact, excludeRegex):
                 [loadImg,
                  partial(scaleImg, imgWidth, imgWidth, keepRatio=True),
                  partial(saveImg, dstFilePath)])
-    # print scales
-    msg = reduce((lambda msg, width: msg + str(width) + ", "), imgWidths, "")
-    print("The used scales are:")
-    print(msg[:-2]) # we do not want that last space and comma.
+    print("Generated imgage info: [[<resolution>, <scale>]...]")
+    res_width = []
+    for width, res in zip(imgWidths, resolutions):
+        res_width.append([width, res])
+    print(res_width)
 
 
 def main():

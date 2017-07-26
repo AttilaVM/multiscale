@@ -15,7 +15,7 @@ Options:
 
 import sys
 from docopt import docopt
-from functools import partial
+from functools import partial, reduce
 from itertools import product as cproduct
 
 from multiscale.elevate import channel
@@ -43,7 +43,7 @@ proccessors = {"source-directory":
 
 def multiscale(srcDir, dstDir, ratio, resolutions, compact, excludeRegex):
     # Derive data
-    imgWidths = map(lambda x: round(ratio * x), resolutions)
+    imgWidths = list(map(lambda x: round(ratio * x), resolutions))
     for imgWidth, srcFileName in cproduct(imgWidths, os.listdir(srcDir)):
         srcFilePath = os.path.join(srcDir, srcFileName)
         if not isImageFile(srcFilePath) or isExcluded(srcFilePath, excludeRegex):
@@ -63,10 +63,9 @@ def multiscale(srcDir, dstDir, ratio, resolutions, compact, excludeRegex):
                  partial(scaleImg, imgWidth, imgWidth, keepRatio=True),
                  partial(saveImg, dstFilePath)])
     # print scales
-    # print("The used scales are:")
-    # print(imgWidths)
-    # for imgWidth in imgWidths:
-    #     print(imgWidths, end="w ")
+    msg = reduce((lambda msg, width: msg + str(width) + ", "), imgWidths, "")
+    print("The used scales are:")
+    print(msg[:-2]) # we do not want that last space and comma.
 
 
 def main():
